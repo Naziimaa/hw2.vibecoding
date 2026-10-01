@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Радужные камушки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <h1>Радужные камушки</h1>
+      <button id="btnSound" class="icon" aria-label="Звук">♪</button>
+    </header>
+
+    <!-- Счётчики -->
+    <section class="hud">
+      <div class="c1"><span>Уровень</span><b id="level">1</b></div>
+      <div class="c2"><span>Ходы</span><b id="moves">0</b></div>
+      <div class="c3"><span>Очки</span><b id="score">0</b></div>
+      <div class="c4"><span>Рекорд</span><b id="best">0</b></div>
+    </section>
+
+    <!-- Полоска: сколько очков осталось до цели уровня -->
+    <div class="goal"><div class="bar"><i id="bar"></i></div><small id="goalTxt"></small></div>
+
+    <!-- Поле: камушки создаются скриптом -->
+    <div class="stage">
+      <div class="board" id="board"></div>
+      <div class="toast" id="toast"></div>
+      <div class="overlay" id="overlay">
+        <h2 id="ovTitle"></h2>
+        <p id="ovText"></p>
+        <button class="main" id="ovBtn"></button>
+      </div>
+    </div>
+
+    <p class="hint">Поменяй два соседних камушка. Три в ряд лопаются, четыре — дарят бомбочку 💣</p>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

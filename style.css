@@ -1,0 +1,161 @@
+/* ===== Цвета и размер поля ===== */
+:root {
+  --ink: #4a2c7a;
+  --size: min(94vw, 62vh, 520px);   /* размер поля подстраивается под экран */
+}
+
+* { box-sizing: border-box; margin: 0; }
+button { font: inherit; border: 0; cursor: pointer; color: inherit; }
+
+body {
+  min-height: 100vh;
+  display: grid; place-items: center;
+  font-family: 'Baloo 2', system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 15%, #fff8 0 6%, transparent 7%),
+    radial-gradient(circle at 88% 30%, #fff8 0 4%, transparent 5%),
+    radial-gradient(circle at 70% 85%, #fff8 0 7%, transparent 8%),
+    linear-gradient(160deg, #ffd1f3, #c6ecff 55%, #fff1b8);
+  background-size: 300px 300px, 400px 400px, 500px 500px, auto;
+  animation: drift 40s linear infinite;      /* медленно плывущие «пузырьки» */
+  overscroll-behavior: none;
+}
+@keyframes drift { to { background-position: 300px 300px, -400px 400px, 500px -500px, 0 0; } }
+
+.app { width: var(--size); padding: 10px 0; }
+
+/* ===== Шапка ===== */
+.top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+h1 {
+  font-size: clamp(1.5rem, 7vw, 2.2rem); font-weight: 800;
+  background: linear-gradient(90deg, #ff3d8b, #ff9a3d, #3ec1ff, #b36bff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 #fff);
+}
+.icon {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: #fff; box-shadow: 0 4px 0 #d9c4ff; font-size: 1.2rem;
+  transition: transform .15s;
+}
+.icon:active { transform: translateY(3px); box-shadow: 0 1px 0 #d9c4ff; }
+.icon.off { opacity: .45; }
+
+/* ===== Счётчики: у каждого свой цвет ===== */
+.hud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+.hud div { border-radius: 16px; padding: 4px 8px; text-align: center; color: #fff; box-shadow: 0 4px 0 rgba(0, 0, 0, .15); }
+.c1 { background: #ff5fa2; } .c2 { background: #ff9a3d; } .c3 { background: #2fc4ff; } .c4 { background: #a66bff; }
+.hud span { display: block; font-size: .72rem; line-height: 1; opacity: .95; }
+.hud b { font-size: 1.4rem; line-height: 1.1; display: inline-block; transition: transform .15s; }
+.hud b.pop { transform: scale(1.35); }
+
+/* ===== Цель уровня ===== */
+.goal { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.bar { flex: 1; height: 16px; border-radius: 10px; background: #fff; box-shadow: inset 0 2px 4px #0002; overflow: hidden; }
+.bar i {
+  display: block; height: 100%; width: 0; border-radius: 10px;
+  background: repeating-linear-gradient(45deg, #ffd23f 0 12px, #ffb300 12px 24px);
+  transition: width .4s;
+}
+.goal small { font-size: .85rem; min-width: 70px; text-align: right; }
+
+/* ===== Поле ===== */
+.stage {
+  position: relative; padding: 8px; border-radius: 28px;
+  background: #ffffffb0; border: 4px solid #fff;
+  box-shadow: 0 10px 0 #cfa9ff, 0 18px 30px #7a3bd244;
+}
+.board {
+  position: relative; width: 100%; aspect-ratio: 1; border-radius: 20px;
+  touch-action: none; user-select: none;
+  /* шахматный фон: каждая клетка 12.5% */
+  background: conic-gradient(#e9dcff 25%, #f7f0ff 0 50%, #e9dcff 0 75%, #f7f0ff 0) 0 0 / 25% 25%;
+}
+.board.wiggle { animation: wiggle .5s; }
+@keyframes wiggle { 25% { transform: rotate(-1.5deg); } 75% { transform: rotate(1.5deg); } }
+
+/* Плитка двигается плавно: так выглядят обмен и падение */
+.tile {
+  position: absolute; left: 0; top: 0; width: 12.5%; height: 12.5%;
+  transition: transform .3s cubic-bezier(.34, 1.3, .64, 1);
+  filter: drop-shadow(0 3px 0 rgba(60, 20, 100, .22));
+  cursor: pointer;
+}
+.tile.isbomb { animation: bombglow .7s infinite alternate; }
+@keyframes bombglow { to { filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px #ffc400); } }
+
+/* ===== Камушки: общая форма, глазки и блик ===== */
+.gem { position: absolute; inset: 9%; background: linear-gradient(150deg, var(--a), var(--b)); }
+.gem::before {            /* милое личико */
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 34% 46%, var(--ink) 0 8%, transparent 9%),
+    radial-gradient(circle at 66% 46%, var(--ink) 0 8%, transparent 9%),
+    radial-gradient(circle at 50% 66%, var(--ink) 0 6%, transparent 7%);
+}
+.gem::after {             /* блик */
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 28% 24%, #fffb 0 13%, transparent 14%);
+}
+/* Шесть видов: свой цвет и своя форма, чтобы различать даже без цвета */
+.g0 { --a: #ff9bc6; --b: #ff2f7e; border-radius: 50%; }
+.g1 { --a: #8be6ff; --b: #1f9bff; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.g2 { --a: #8cf5b0; --b: #1fcf63; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+.g3 { --a: #ffee8a; --b: #ffbb00; clip-path: polygon(50% 4%, 100% 92%, 0 92%); }
+.g4 { --a: #ffc48a; --b: #ff7a1a; clip-path: polygon(50% 0, 62% 36%, 98% 36%, 69% 58%, 80% 94%, 50% 72%, 20% 94%, 31% 58%, 2% 36%, 38% 36%); }
+.g5 { --a: #d9b0ff; --b: #8a45ff; border-radius: 30%; }
+
+/* Бомбочка */
+.bm {
+  position: absolute; inset: 0; display: grid; place-items: center; font-style: normal;
+  font-size: calc(var(--size) / 15); pointer-events: none;
+  animation: tick .5s infinite alternate;
+}
+@keyframes tick { to { transform: scale(1.2) rotate(8deg); } }
+
+/* Анимации действий */
+.tile.sel .gem { animation: jump .45s infinite alternate; }
+@keyframes jump { to { transform: translateY(-9%) scale(1.1); } }
+.tile.no .gem { animation: no .3s; }
+@keyframes no { 25% { transform: translateX(-12%); } 75% { transform: translateX(12%); } }
+.tile.pop .gem, .tile.pop .bm { animation: burst .26s forwards; }
+@keyframes burst { 40% { transform: scale(1.3) rotate(10deg); } 100% { transform: scale(0) rotate(50deg); opacity: 0; } }
+
+/* Разлетающиеся искорки */
+.spark {
+  position: absolute; width: 10px; height: 10px; margin: -5px; border-radius: 50%;
+  pointer-events: none; animation: fly .65s ease-out forwards;
+}
+@keyframes fly { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+
+/* Всплывающая надпись («Комбо!») */
+.toast {
+  position: absolute; left: 50%; top: 45%; translate: -50% -50%; pointer-events: none;
+  font-size: clamp(1.8rem, 9vw, 3rem); font-weight: 800; color: #fff; opacity: 0;
+  -webkit-text-stroke: 2px #ff3d8b; paint-order: stroke fill; text-shadow: 0 4px 0 #ff3d8b;
+}
+.toast.show { animation: toast .9s; }
+@keyframes toast { 0% { opacity: 0; scale: .4; } 25% { opacity: 1; scale: 1.15; } 80% { opacity: 1; } 100% { opacity: 0; translate: -50% -120%; } }
+
+/* ===== Экран-накладка ===== */
+.overlay {
+  position: absolute; inset: 0; border-radius: 24px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 24px; text-align: center; background: #fff9; backdrop-filter: blur(6px);
+  transition: opacity .3s, visibility .3s;
+}
+.overlay.hidden { opacity: 0; visibility: hidden; }
+.overlay h2 { font-size: clamp(1.8rem, 8vw, 2.6rem); font-weight: 800; color: #ff3d8b; line-height: 1.1; }
+.overlay p { max-width: 28ch; line-height: 1.3; }
+.main {
+  margin-top: 8px; padding: 10px 34px; border-radius: 999px; font-size: 1.3rem; font-weight: 800; color: #fff;
+  background: linear-gradient(#ffb23d, #ff6a3d); box-shadow: 0 6px 0 #c2410c;
+  transition: transform .1s, box-shadow .1s;
+}
+.main:active { transform: translateY(5px); box-shadow: 0 1px 0 #c2410c; }
+
+.hint { margin-top: 18px; text-align: center; font-size: .85rem; line-height: 1.3; }
+
+button:focus-visible { outline: 3px solid #3ec1ff; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
